@@ -1,84 +1,60 @@
 import tkinter as tk
 
-# Constants for color scheme
-COLOR_PACKAGE = "green"
-COLOR_SIGNAL = "orange"
-COLOR_PREPREG = "skyblue"
-COLOR_CORE = "lightgreen"
-COLOR_POWER = "red"
+def create_stackup_array(given_layers):
+    stackup_array = []
 
-# Constants for material sizes
-WIDTH_SIGNAL = 1
-WIDTH_OTHERS = 5
+    # Verify if given_layers can generate a symmetrical structure
+    if given_layers % 2 != 0:
+        error_message = "Unable to generate symmetrical stackup with given number of layers."
+        stackup_array.append(error_message)
+        return stackup_array
 
-def draw_stackup(total_layers, signal_layers):
-    canvas.delete("all")
+    # Calculate the symmetric line
+    symmetric_line = given_layers // 2
 
-    # Calculate the number of core and prepreg layers
-    core_prepreg_layers = total_layers - signal_layers - 4
+    # Generate the stackup structure for the upper section
+    for i in range(1, symmetric_line):
+        if i % 2 == 1:
+            stackup_array.append(f"Layer {i} - Upper - Signal")
+        else:
+            stackup_array.append(f"Layer {i} - Upper - Ground")
 
-    # Draw the top and bottom package layers
-    draw_layer(COLOR_PACKAGE, WIDTH_OTHERS, "Package")
+    # Generate the stackup structure for the middle section
+    stackup_array.append(f"Layer {symmetric_line} - Middle - Power")
+    stackup_array.append(f"Layer {symmetric_line + 1} - Middle - Power")
 
-    # Draw the signal, prepreg, and ground layers
-    draw_signal_layer(signal_layers)
+    # Generate the stackup structure for the lower section
+    for i in range(symmetric_line + 2, given_layers + 1):
+        if i % 2 == 1:
+            stackup_array.append(f"Layer {i} - Lower - Ground")
+        else:
+            stackup_array.append(f"Layer {i} - Lower - Signal")
 
-    # Draw the core, signal, prepreg, and ground layers
-    for _ in range(core_prepreg_layers):
-        draw_layer(COLOR_CORE, WIDTH_OTHERS, "Core")
-        draw_signal_layer(signal_layers)
-        draw_layer(COLOR_PREPREG, WIDTH_OTHERS, "Prepreg")
-        draw_layer(COLOR_CORE, WIDTH_OTHERS, "Core")
+    return stackup_array
 
-    # Draw the power layer
-    draw_layer(COLOR_CORE, WIDTH_OTHERS, "Core")
-    draw_layer(COLOR_POWER, WIDTH_OTHERS, "Power")
-    draw_layer(COLOR_PREPREG, WIDTH_OTHERS, "Prepreg")
-    draw_layer(COLOR_POWER, WIDTH_OTHERS, "Power")
-    draw_layer(COLOR_CORE, WIDTH_OTHERS, "Core")
+def draw_stackup():
+    given_layers = int(entry_given_layers.get())
 
-    # Draw the remaining signal, prepreg, and ground layers
-    draw_signal_layer(signal_layers)
-    draw_layer(COLOR_PREPREG, WIDTH_OTHERS, "Prepreg")
-    draw_layer(COLOR_CORE, WIDTH_OTHERS, "Core")
+    # Create the stackup array
+    stackup_array = create_stackup_array(given_layers)
 
-def draw_layer(color, width, label_text):
-    x1 = 10
-    x2 = 390
-    y1 = canvas.winfo_height() - 10
-    y2 = y1 - 40
-
-    # Center the signal material
-    if width == WIDTH_SIGNAL:
-        x1 = (x1 + x2) / 2 - (x2 - x1) / 10
-        x2 = (x1 + x2) / 2 + (x2 - x1) / 10
-
-    canvas.create_rectangle(x1, y1, x2, y2, fill=color, width=0)
-    canvas.create_text((x1 + x2) / 2, (y1 + y2) / 2, text=label_text)
-
-def draw_signal_layer(signal_layers):
-    for _ in range(signal_layers):
-        draw_layer(COLOR_SIGNAL, WIDTH_SIGNAL, "Signal")
+    # Display the stackup structure in the console
+    for layer in stackup_array:
+        print(layer)
 
 # Create the main window
 window = tk.Tk()
 window.title("PCB Stackup Visualizer")
 
 # Create the UI elements
-label_total_layers = tk.Label(window, text="Total Layers:")
-entry_total_layers = tk.Entry(window)
-label_signal_layers = tk.Label(window, text="Signal Layers:")
-entry_signal_layers = tk.Entry(window)
-button_draw = tk.Button(window, text="Draw", command=lambda: draw_stackup(int(entry_total_layers.get()), int(entry_signal_layers.get())))
-canvas = tk.Canvas(window, width=400, height=800)
+label_given_layers = tk.Label(window, text="Total Layers:")
+entry_given_layers = tk.Entry(window)
+button_draw = tk.Button(window, text="Draw", command=draw_stackup)
 
 # Add the UI elements to the window
-label_total_layers.pack()
-entry_total_layers.pack()
-label_signal_layers.pack()
-entry_signal_layers.pack()
+label_given_layers.pack()
+entry_given_layers.pack()
 button_draw.pack()
-canvas.pack()
 
 # Start the main event loop
 window.mainloop()
