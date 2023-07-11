@@ -1,14 +1,41 @@
-# Sandbox 2: Signal, Power, Ground layer placement.
-
 import tkinter as tk
+import matplotlib.pyplot as plt
+
+COLOR_SIGNAL = "orange"
+COLOR_GROUND = "grey"
+COLOR_POWER = "red"
+
+def create_stackup_image(given_layers):
+    fig = plt.figure(figsize=(6, 6))
+    ax = fig.add_subplot(111)
+
+    stackup_array = create_stackup_array(given_layers)
+
+    ax.axis('off')
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+
+    for i, layer in enumerate(stackup_array[::-1]):
+        layer_name, layer_type = layer.split(" - ")
+        if layer_type == "Signal":
+            layer_width = 1/5
+            x_start = (1 - layer_width) / 2
+            x_end = x_start + layer_width
+            ax.fill_between([x_start, x_end], [i / given_layers, i / given_layers], [(i + 1) / given_layers, (i + 1) / given_layers], color=COLOR_SIGNAL)
+        else:
+            ax.fill_between([0, 1], [i / given_layers, i / given_layers], [(i + 1) / given_layers, (i + 1) / given_layers], color=COLOR_GROUND)
+
+        ax.text(0.05, (i + 0.5) / given_layers, layer_name, va='center')
+
+    return fig
 
 def create_stackup_array(given_layers):
     stackup_array = []
 
     if ((given_layers - 2) / 2) % 2 != 0:
         error_message = "Unable to generate symmetrical stackup with given number of layers."
-        label_output.config(text=error_message)
-        return
+        stackup_array.append(error_message)
+        return stackup_array
 
     symmetric_line = given_layers // 2
 
@@ -27,12 +54,14 @@ def create_stackup_array(given_layers):
         else:
             stackup_array.append(f"Layer {i} - Lower - Signal")
 
-    output_text = "\n".join(stackup_array)
-    label_output.config(text=output_text)
+    return stackup_array
 
 def draw_stackup():
     given_layers = int(entry_given_layers.get())
-    create_stackup_array(given_layers)
+
+    fig = create_stackup_image(given_layers)
+
+    fig.show()
 
 window = tk.Tk()
 window.title("PCB Stackup Visualizer")
@@ -47,11 +76,9 @@ window.geometry(f"{window_width}x{window_height}")
 label_given_layers = tk.Label(window, text="Total Layers:")
 entry_given_layers = tk.Entry(window)
 button_draw = tk.Button(window, text="Draw", command=draw_stackup)
-label_output = tk.Label(window, text="")
 
 label_given_layers.pack()
 entry_given_layers.pack()
 button_draw.pack()
-label_output.pack()
 
 window.mainloop()
