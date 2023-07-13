@@ -1,80 +1,53 @@
-# Developed by Sean Hwang (seahwang@cisco.com)
-# PCB Stackup Visualizer + Trace Impedance Optimizer
+# Sandbox 2: Signal, Power, Ground layer placement.
 
 import tkinter as tk
-import matplotlib.pyplot as plt
 
-COLOR_SIGNAL = "orange"
-COLOR_GROUND = "grey"
-COLOR_POWER = "red"
-
-def create_stackup_image(given_layers):
-    stackup_array = create_stackup_array(given_layers)
-
-    if len(stackup_array) == 1 and "Unable to generate" in stackup_array[0]:
-        error_message = stackup_array[0]
-        fig = plt.figure(figsize=(6, 6))
-        ax = fig.add_subplot(111)
-        ax.text(0.5, 0.5, error_message, ha='center', va='center', fontsize=12)
-        ax.axis('off')
-    else:
-        fig = plt.figure(figsize=(6, 6))
-        ax = fig.add_subplot(111)
-
-        ax.axis('off')
-        ax.set_xlim(0, 1)
-        ax.set_ylim(0, 1)
-
-        for i, layer in enumerate(stackup_array[::-1]):
-            if "Upper" in layer:
-                layer_info = layer.split(" - ")
-                layer_name = layer_info[0]
-                layer_type = layer_info[2]
-                if layer_type == "Signal":
-                    layer_width = 1/5
-                    x_start = (1 - layer_width) / 2
-                    x_end = x_start + layer_width
-                    ax.fill_between([x_start, x_end], [i / given_layers, i / given_layers], [(i + 1) / given_layers, (i + 1) / given_layers], color=COLOR_SIGNAL)
-                else:
-                    ax.fill_between([0, 1], [i / given_layers, i / given_layers], [(i + 1) / given_layers, (i + 1) / given_layers], color=COLOR_GROUND)
-
-                ax.text(0.05, (i + 0.5) / given_layers, layer_name, va='center')
-
-    return fig
+stackup_array = []
+layer_number = []
 
 def create_stackup_array(given_layers):
-    stackup_array = []
+    global stackup_array
+    global layer_number
 
     if ((given_layers - 2) / 2) % 2 != 0:
-        error_message = "Unable to generate symmetrical stackup with given number of layers."
-        stackup_array.append(error_message)
-        return stackup_array
+        error_message = "Unable to generate symmetrical stackup with the given number of layers."
+        label_output.config(text=error_message)
+        return
 
     symmetric_line = given_layers // 2
 
+    stackup_array = []
+
     for i in range(1, symmetric_line):
         if i % 2 == 1:
-            stackup_array.append(f"Layer {i} - Upper - Signal")
+            stackup_array.append("Signal")
+            layer_number.append(f"Layer {i}")
         else:
-            stackup_array.append(f"Layer {i} - Upper - Ground")
+            stackup_array.append("Ground")
+            layer_number.append(f"Layer {i}")
 
-    stackup_array.append(f"Layer {symmetric_line} - Middle - Power")
-    stackup_array.append(f"Layer {symmetric_line + 1} - Middle - Power")
+    stackup_array.append("Power")
+    layer_number.append(f"Layer {symmetric_line}")
+    stackup_array.append("Power")
+    layer_number.append(f"Layer {symmetric_line + 1}")
 
     for i in range(symmetric_line + 2, given_layers + 1):
         if i % 2 == 1:
-            stackup_array.append(f"Layer {i} - Lower - Ground")
+            stackup_array.append("Ground")
+            layer_number.append(f"Layer {i}")
         else:
-            stackup_array.append(f"Layer {i} - Lower - Signal")
+            stackup_array.append("Signal")
+            layer_number.append(f"Layer {i}")
 
-    return stackup_array
+    final_array = stackup_array
+    output_text = "\n".join(stackup_array)
+    label_output.config(text=output_text)
+
+    print(stackup_array)
 
 def draw_stackup():
     given_layers = int(entry_given_layers.get())
-
-    fig = create_stackup_image(given_layers)
-
-    fig.show()
+    create_stackup_array(given_layers)
 
 window = tk.Tk()
 window.title("PCB Stackup Visualizer")
@@ -89,9 +62,12 @@ window.geometry(f"{window_width}x{window_height}")
 label_given_layers = tk.Label(window, text="Total Layers:")
 entry_given_layers = tk.Entry(window)
 button_draw = tk.Button(window, text="Draw", command=draw_stackup)
+label_output = tk.Label(window, text="")
 
 label_given_layers.pack()
 entry_given_layers.pack()
 button_draw.pack()
+label_output.pack()
+
 
 window.mainloop()

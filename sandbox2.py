@@ -29,6 +29,7 @@ def create_stackup_array(given_layers):
 
     output_text = "\n".join(stackup_array)
     label_output.config(text=output_text)
+    return stackup_array
 
 def draw_stackup():
     given_layers = int(entry_given_layers.get())
