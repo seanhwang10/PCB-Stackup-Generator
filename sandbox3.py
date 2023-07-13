@@ -1,3 +1,6 @@
+# Developed by Sean Hwang (seahwang@cisco.com)
+# PCB Stackup Visualizer + Trace Impedance Optimizer
+
 import tkinter as tk
 import matplotlib.pyplot as plt
 
@@ -6,26 +9,36 @@ COLOR_GROUND = "grey"
 COLOR_POWER = "red"
 
 def create_stackup_image(given_layers):
-    fig = plt.figure(figsize=(6, 6))
-    ax = fig.add_subplot(111)
-
     stackup_array = create_stackup_array(given_layers)
 
-    ax.axis('off')
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
+    if len(stackup_array) == 1 and "Unable to generate" in stackup_array[0]:
+        error_message = stackup_array[0]
+        fig = plt.figure(figsize=(6, 6))
+        ax = fig.add_subplot(111)
+        ax.text(0.5, 0.5, error_message, ha='center', va='center', fontsize=12)
+        ax.axis('off')
+    else:
+        fig = plt.figure(figsize=(6, 6))
+        ax = fig.add_subplot(111)
 
-    for i, layer in enumerate(stackup_array[::-1]):
-        layer_name, layer_type = layer.split(" - ")
-        if layer_type == "Signal":
-            layer_width = 1/5
-            x_start = (1 - layer_width) / 2
-            x_end = x_start + layer_width
-            ax.fill_between([x_start, x_end], [i / given_layers, i / given_layers], [(i + 1) / given_layers, (i + 1) / given_layers], color=COLOR_SIGNAL)
-        else:
-            ax.fill_between([0, 1], [i / given_layers, i / given_layers], [(i + 1) / given_layers, (i + 1) / given_layers], color=COLOR_GROUND)
+        ax.axis('off')
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
 
-        ax.text(0.05, (i + 0.5) / given_layers, layer_name, va='center')
+        for i, layer in enumerate(stackup_array[::-1]):
+            if "Upper" in layer:
+                layer_info = layer.split(" - ")
+                layer_name = layer_info[0]
+                layer_type = layer_info[2]
+                if layer_type == "Signal":
+                    layer_width = 1/5
+                    x_start = (1 - layer_width) / 2
+                    x_end = x_start + layer_width
+                    ax.fill_between([x_start, x_end], [i / given_layers, i / given_layers], [(i + 1) / given_layers, (i + 1) / given_layers], color=COLOR_SIGNAL)
+                else:
+                    ax.fill_between([0, 1], [i / given_layers, i / given_layers], [(i + 1) / given_layers, (i + 1) / given_layers], color=COLOR_GROUND)
+
+                ax.text(0.05, (i + 0.5) / given_layers, layer_name, va='center')
 
     return fig
 
