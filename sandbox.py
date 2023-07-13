@@ -1,67 +1,59 @@
-import tkinter as tk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import matplotlib.pyplot as plt
+# Developed by Kevin Cai (kecai@cisco.com) and Sean Hwang (seahwang@cisco.com)
+# Make sure [docx], [translate], [tkinter] are pip-installed.
 
+import os
+import docx
+from translate import Translator
+from tkinter import Tk, filedialog, messagebox
 
-def update_layer_names():
-    new_layer_names = entry.get().split(',')
-    new_layer_names = [name.strip() for name in new_layer_names]
+# OS User interface (displays the window)
+root = Tk()         # Do not touch!
+root.withdraw()     # DO not touch!
 
-    global layer_names
-    layer_names = new_layer_names
+input_file_path = filedialog.askopenfilename(
+    title="Select the input Word document",
+    filetypes=[("Word Document", "*.docx")]
+)
 
-    global num_layers
-    num_layers = len(layer_names)
+# File verification
+# (file will only take .docx file in the first place, but this is another safety feature for stability)
+if not input_file_path:
+    print("Error: No input file selected.")
+    exit(1)
 
-    update_plot()
+if not input_file_path.endswith(".docx"):
+    messagebox.showerror("Error", "Invalid file type. Please select a Word document (*.docx).")
+    exit(1)
 
+# Translation
+input_doc = docx.Document(input_file_path)
+translator = Translator(to_lang='zh')
+translation = ''
 
-def update_plot():
-    ax.clear()
+for paragraph in input_doc.paragraphs:
+    translation += translator.translate(paragraph.text) + '\n'
 
-    for i in range(num_layers):
-        if layer_names[i] == 'Signal':
-            ax.fill_between([0.2, 0.8], i, i + 1, color=layer_colors[i])
-        else:
-            ax.fill_between([0, 1], i, i + 1, color=layer_colors[i])
+print("Translation:")
+print(translation)
 
-        ax.text(1.1, i + 0.5, f'{layer_thickness[i]}', ha='left', va='center')
-        ax.text(0.5, i + 0.5, layer_names[i], ha='center', va='center', color='white')
+# Saving the translated file
+save_translation = messagebox.askyesno("Save Translation", "Do you want to save the translated file?")
 
-    for i in range(num_layers):
-        ax.text(-0.5, i + 0.5, f'{i}', ha='center', va='center')
+if save_translation:
+    output_doc = docx.Document()
+    output_doc.add_heading(input_file_path + " - Chinese Translation", level=1)
+    output_doc.add_paragraph(translation)
+    output_file_path = filedialog.asksaveasfilename(
+        defaultextension=".docx",
+        filetypes=[("Word Document", "*.docx")]
+    )
+    if output_file_path:
+        output_doc.save(output_file_path)
+        print("Translation saved to:", output_file_path)
+    else:
+        print("Translation not saved.")
+else:
+    print("Translation:")
+    print(translation)
 
-    ax.text(1.2, num_layers/2, 'Thickness', ha='center', va='center', rotation=-90)
-    ax.text(0.5, -0.2, 'PCB Stackup', ha='center', va='center')
-
-    canvas.draw()
-
-
-layer_names = ['Signal', 'Core', 'Prepreg', 'Ground', 'Power']
-layer_thickness = [3, 3, 3, 3, 3]
-num_layers = len(layer_names)
-layer_colors = ['tab:orange', 'lightgreen', 'skyblue', 'gray', 'tab:red']
-
-window = tk.Tk()
-window.title("PCB Stackup Configuration")
-
-label = tk.Label(window, text="Layer Names:")
-label.pack()
-
-entry = tk.Entry(window)
-entry.pack()
-
-entry.insert(tk.END, ", ".join(layer_names))
-
-button = tk.Button(window, text="Update", command=update_layer_names)
-button.pack()
-
-fig, ax = plt.subplots(figsize=(4, 6))
-
-canvas = FigureCanvasTkAgg(fig, master=window)
-canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-
-update_plot()
-
-window.title('PCB Stackup')
-tk.mainloop()
+print("Completed.")
