@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+import math
 
 def calculate_impedance():
     # Get user inputs from the entry widgets
@@ -7,14 +8,13 @@ def calculate_impedance():
     s = float(s_entry.get())
     t = float(t_entry.get())
     h_1 = float(h1_entry.get())
-    impedance_type = impedance_type_var.get()
+    impedance_type = impedance_notebook.index(impedance_notebook.select())
 
-    # Calculate impedance based on the type selected
-    if impedance_type == "Single Ended":
+    if impedance_type == 0:  # Single Ended
         Er_1 = float(Er1_entry.get())
         impedance = w / (2 * 3.141592653589793 * s * t) * (1 + (1 + 2 * h_1 / w) ** 0.5)
         impedance *= (1 - 0.48 * math.exp(-0.96 * (Er_1 - 1)) + 0.54 * ((Er_1 - 1) ** 2))
-    else:
+    else:  # Differential
         h_2 = float(h2_entry.get())
         Er_1 = float(Er1_entry.get())
         Er_2 = float(Er2_entry.get())
@@ -30,45 +30,54 @@ root = tk.Tk()
 root.title("Impedance Calculator")
 root.geometry("400x300")
 
-# Create a label and dropdown menu for impedance type selection
-impedance_type_label = tk.Label(root, text="Select Impedance Type:")
-impedance_type_label.pack(pady=10)
-impedance_type_var = tk.StringVar()
-impedance_type_var.set("Single Ended")
-impedance_type_menu = ttk.OptionMenu(root, impedance_type_var, "Single Ended", "Differential")
-impedance_type_menu.pack()
+# Create a notebook (tabbed interface)
+impedance_notebook = ttk.Notebook(root)
+impedance_notebook.pack(fill=tk.BOTH, expand=True)
 
-# Create entry widgets for user inputs
-w_label = tk.Label(root, text="Enter w:")
+# Create the Single Ended tab
+single_ended_tab = ttk.Frame(impedance_notebook)
+impedance_notebook.add(single_ended_tab, text="Single Ended")
+
+# Create entry widgets for Single Ended inputs
+w_label = tk.Label(single_ended_tab, text="Enter w:")
 w_label.pack()
-w_entry = tk.Entry(root)
+w_entry = tk.Entry(single_ended_tab)
 w_entry.pack()
 
-s_label = tk.Label(root, text="Enter s:")
+s_label = tk.Label(single_ended_tab, text="Enter s:")
 s_label.pack()
-s_entry = tk.Entry(root)
+s_entry = tk.Entry(single_ended_tab)
 s_entry.pack()
 
-t_label = tk.Label(root, text="Enter t:")
+t_label = tk.Label(single_ended_tab, text="Enter t:")
 t_label.pack()
-t_entry = tk.Entry(root)
+t_entry = tk.Entry(single_ended_tab)
 t_entry.pack()
 
-h1_label = tk.Label(root, text="Enter h_1:")
+h1_label = tk.Label(single_ended_tab, text="Enter h_1:")
 h1_label.pack()
-h1_entry = tk.Entry(root)
+h1_entry = tk.Entry(single_ended_tab)
 h1_entry.pack()
 
-Er1_label = tk.Label(root, text="Enter Er_1:")
+Er1_label = tk.Label(single_ended_tab, text="Enter Er_1:")
 Er1_label.pack()
-Er1_entry = tk.Entry(root)
+Er1_entry = tk.Entry(single_ended_tab)
 Er1_entry.pack()
 
-# Entries for differential impedance
-h2_label = tk.Label(root, text="Enter h_2:")
-h2_entry = tk.Entry(root)
-Er2_label = tk.Label(root, text="Enter Er_2:")
-Er2_entry = tk.Entry(root)
+# Create the Differential tab
+differential_tab = ttk.Frame(impedance_notebook)
+impedance_notebook.add(differential_tab, text="Differential")
+
+# Create entry widgets for Differential inputs
+h2_label = tk.Label(differential_tab, text="Enter h_2:")
+h2_label.pack()
+h2_entry = tk.Entry(differential_tab)
+h2_entry.pack()
+
+Er2_label = tk.Label(differential_tab, text="Enter Er_2:")
+Er2_label.pack()
+Er2_entry = tk.Entry(differential_tab)
+Er2_entry.pack()
 
 # Create the "Calculate Impedance" button
 calculate_button = tk.Button(root, text="Calculate Impedance", command=calculate_impedance)
