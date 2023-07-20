@@ -1,4 +1,4 @@
-# Impedance 1 - User input and tabs for all types 
+# Impedance 1 - User input and tabs for all types
 
 import tkinter as tk
 from tkinter import ttk
@@ -14,6 +14,7 @@ def calculate_impedance():
         Er = float(microstrip_se_Er_entry.get())
         impedance = w / (2 * 3.141592653589793 * t) * (1 + (1 + 12 * h / w) ** 0.5)
         impedance *= (1 + 0.04 * (Er - 1) / (Er + 1))
+
     elif selected_tab == 1:  # Microstrip - Diff
         w = float(microstrip_diff_w_entry.get())
         s = float(microstrip_diff_s_entry.get())
@@ -22,6 +23,7 @@ def calculate_impedance():
         Er = float(microstrip_diff_Er_entry.get())
         impedance = w / (2 * 3.141592653589793 * s * t) * (1 + (1 + 12 * h / w) ** 0.5)
         impedance *= (1 + 0.04 * (Er - 1) / (Er + 1))
+
     elif selected_tab == 2:  # Stripline - SE
         w = float(stripline_se_w_entry.get())
         t = float(stripline_se_t_entry.get())
@@ -29,6 +31,7 @@ def calculate_impedance():
         Er1 = float(stripline_se_Er1_entry.get())
         impedance = w / (2 * 3.141592653589793 * t) * (1 + (1 + 2 * h1 / w) ** 0.5)
         impedance *= (1 - 0.48 * math.exp(-0.96 * (Er1 - 1)) + 0.54 * ((Er1 - 1) ** 2))
+
     else:  # Stripline - Diff
         w = float(stripline_diff_w_entry.get())
         s = float(stripline_diff_s_entry.get())
