@@ -5,7 +5,7 @@ from tkinter import ttk
 import math
 
 def calculate_impedance():
-    # Get user inputs from the entry widgets based on the selected tab
+    # Entry Widget
     selected_tab = impedance_notebook.index(impedance_notebook.select())
     
     # (Local) Global Parameters for comfort
@@ -29,10 +29,10 @@ def calculate_impedance():
         w_eff = w + (t/pi) * math.log(ln_content, math.e) * ((Er+1)/(2*Er))
         X1 = 4 * ((14*Er+8) / (11 * Er)) * (h / w_eff)
         X2 = math.sqrt(16 * (h / w_eff)**2 * ((14 * Er + 8) / (11 * Er))**2 + ((Er + 1) / (2 * Er)) * pi**2) 
-        ln_content = 1+4*(h/w_eff)
-        impedance = (n_0 / (2*pi*math.sqrt(2)*math.sqrt(Er+1))) * math.log(ln_content,math.e) * (X1+X2)
+        ln_content = 1+4*(h/w_eff)*(X1+X2)
+        impedance = (n_0 / (2*pi*math.sqrt(2)*math.sqrt(Er+1))) * math.log(ln_content,math.e)
 
-        # Test to show Kevin
+        # Test to show Parameters
         print("W_eff: ")
         print(w_eff)
         print("\nX1, X2 : ")
@@ -44,8 +44,21 @@ def calculate_impedance():
         t = float(microstrip_diff_t_entry.get())
         h = float(microstrip_diff_h_entry.get())
         Er = float(microstrip_diff_Er_entry.get())
-        impedance = w / (2 * 3.141592653589793 * s * t) * (1 + (1 + 12 * h / w) ** 0.5)
-        impedance *= (1 + 0.04 * (Er - 1) / (Er + 1))
+
+        # Calculation Begin
+        u = w / h 
+        g = s / h 
+        Er_eff = 0
+        Er_eff0 = 0 
+
+        if u < 1:
+            Er_eff = ((Er + 1) / 2) + ((Er - 1) / 2) * ((math.sqrt(w / (w+12*h))) + 0.04 * ((w / (w + 12 * h))**2)) #7
+
+        else: 
+            Er_eff = ((Er + 1) / 2) + ((Er - 1) / 2) * (math.sqrt(w / (w+12*h))) #8 
+
+        
+
 
     elif selected_tab == 2:  # Stripline - SE
         w = float(stripline_se_w_entry.get())
