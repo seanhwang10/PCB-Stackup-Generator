@@ -1,0 +1,35 @@
+Test Case 1: 
+
+Input >> 
+h = 2.7 
+Er = 3.5 
+w = 5 
+s = 8
+t = 1.2 
+
+Output >> 
+Impedance = 96.82 (10% tolerance acceptable) 
+
+Test Case 2: 
+
+Input >> 
+h = 5
+Er = 3
+w = 6 
+s = 9
+t = 1.2 
+
+Output >> 
+Impedance = 126.05 (10% tolerance acceptable) 
+
+Test Case 3: 
+
+Input >> 
+h = 3
+Er = 2.8 
+w = 4
+s = 11
+t = 0.6
+
+Output >> 
+Impedance = 133.75 (10% tolerance acceptable) 
