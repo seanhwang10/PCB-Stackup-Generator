@@ -1,4 +1,5 @@
 # Impedance 2 - Microstrip SE, Diff formula integration.
+# Sean Hwang (seahwang@cisco.com)
 
 import tkinter as tk
 from tkinter import ttk
@@ -23,20 +24,22 @@ def calculate_impedance():
         w_eff = 0
         X1 = 0
         X2 = 0 
-        
-        # Equation (1) 
+    
         ln_content = (4*math.e)/(math.sqrt((t / h)**2 + (t / (w*pi + 1.1*t*pi))**2))
-        w_eff = w + (t/pi) * math.log(ln_content, math.e) * ((Er+1)/(2*Er))
-        X1 = 4 * ((14*Er+8) / (11 * Er)) * (h / w_eff)
-        X2 = math.sqrt(16 * (h / w_eff)**2 * ((14 * Er + 8) / (11 * Er))**2 + ((Er + 1) / (2 * Er)) * pi**2) 
+        w_eff = w + (t/pi) * math.log(ln_content, math.e) * ((Er+1)/(2*Er))                                     #2
+        
+        X1 = 4 * ((14*Er+8) / (11 * Er)) * (h / w_eff)                                                          #3
+        
+        X2 = math.sqrt(16 * (h / w_eff)**2 * ((14 * Er + 8) / (11 * Er))**2 + ((Er + 1) / (2 * Er)) * pi**2)    #4
+        
         ln_content = 1+4*(h/w_eff)*(X1+X2)
-        impedance = (n_0 / (2*pi*math.sqrt(2)*math.sqrt(Er+1))) * math.log(ln_content,math.e)
+        impedance = (n_0 / (2*pi*math.sqrt(2)*math.sqrt(Er+1))) * math.log(ln_content,math.e)                   #1 
 
-        # Test to show Parameters
-        print("W_eff: ")
-        print(w_eff)
-        print("\nX1, X2 : ")
-        print(X1,X2)
+        # # Test to show Parameters
+        # print("W_eff: ")
+        # print(w_eff)
+        # print("\nX1, X2 : ")
+        # print(X1,X2)
 
     elif selected_tab == 1:  # Microstrip - Diff
         w = float(microstrip_diff_w_entry.get())
@@ -45,6 +48,17 @@ def calculate_impedance():
         h = float(microstrip_diff_h_entry.get())
         Er = float(microstrip_diff_Er_entry.get())
 
+        # Zo calculation (Same with MSSE calc)
+        ln_content = (4*math.e)/(math.sqrt((t / h)**2 + (t / (w*pi + 1.1*t*pi))**2))
+        w_eff = w + (t/pi) * math.log(ln_content, math.e) * ((Er+1)/(2*Er))                                     #2
+        
+        X1 = 4 * ((14*Er+8) / (11 * Er)) * (h / w_eff)                                                          #3
+        
+        X2 = math.sqrt(16 * (h / w_eff)**2 * ((14 * Er + 8) / (11 * Er))**2 + ((Er + 1) / (2 * Er)) * pi**2)    #4
+        
+        ln_content = 1+4*(h/w_eff)*(X1+X2)
+        Zo = (n_0 / (2*pi*math.sqrt(2)*math.sqrt(Er+1))) * math.log(ln_content,math.e)                          #1 
+   
         # Calculation Begin
         u = w / h 
         g = s / h 
@@ -76,7 +90,7 @@ def calculate_impedance():
         ln_content = (g**10)/(1+(g/3.4)**10)
         q3 = 0.1975 + ((16.6 + (8.4 / g)**6)**-0.387) + (1/241)*math.log(ln_content,math.e)     #15
         
-        q4 = (2 * q1) / (q2(math.exp(-g) * u**q3 + (2-math.exp(-g)) * u**(-q3)))                #16
+        q4 = (2 * q1) / (q2*(math.exp(-g) * u**q3 + (2- math.exp(-g)) * u**(-q3)))              #16
         
         ln_content = 1 + (0.638 / (g + 0.517 * g**2.43))
         q5 = 1.794 + 1.14 * math.log(ln_content, math.e)                                        #17
@@ -88,12 +102,15 @@ def calculate_impedance():
         
         q7 = (10 + 190 * (g**2)) / (1 + 82.3 * (g**3))                                          #19
 
+        q8 = math.exp(-6.5 - 0.95 * math.log(g, math.e) - (g / 0.15)**5)                        #20 
 
+        q9 = math.log(q7, math.e) * (q8 + (1 / 16.5))                                           #21
 
+        q10 = (1/q2) * (q2 * q4 - q5 * math.exp(math.log(u, math.e)*q6*u**(-q9)))               #22 
 
+        Er_eff0 = ((0.5 * (Er + 1) + a0 - Er_eff) * math.exp(-c0 * g**d0)) + Er_eff             #23 
 
-
-        
+        impedance = Zo * (math.sqrt(Er_eff / Er_eff0) / (1 - ((Zo/n_0)* q10 * math.sqrt(Er_eff))))  #24 
 
 
     elif selected_tab == 2:  # Stripline - SE
