@@ -133,10 +133,9 @@ def calculate_impedance():
         impedance *= (1 - 0.48 * math.exp(-0.96 * (Er1 - 1)) + 0.54 * ((Er1 - 1) ** 2))
         impedance *= (1 - 0.48 * math.exp(-0.96 * (Er2 - 1)) + 0.54 * ((Er2 - 1) ** 2))
 
-    # Update the output label with the calculated impedance
     output_label.config(text=f"Impedance: {impedance:.2f} Ohms")
 
-# Create the main application window
+# main application window
 root = tk.Tk()
 root.title("Impedance Calculator")
 root.geometry("500x550")
@@ -145,11 +144,11 @@ root.geometry("500x550")
 impedance_notebook = ttk.Notebook(root)
 impedance_notebook.pack(fill=tk.BOTH, expand=True)
 
-# Create the Microstrip - SE tab
+# Microstrip 0- SE tab
 microstrip_se_tab = ttk.Frame(impedance_notebook)
 impedance_notebook.add(microstrip_se_tab, text="Microstrip - SE")
 
-# Create entry widgets for Microstrip - SE inputs
+# Microstrip - SE inputs
 microstrip_se_w_label = tk.Label(microstrip_se_tab, text="Enter w:")
 microstrip_se_w_label.pack()
 microstrip_se_w_entry = tk.Entry(microstrip_se_tab)
@@ -170,11 +169,11 @@ microstrip_se_Er_label.pack()
 microstrip_se_Er_entry = tk.Entry(microstrip_se_tab)
 microstrip_se_Er_entry.pack()
 
-# Create the Microstrip - Diff tab
+# Microstrip - Diff tab
 microstrip_diff_tab = ttk.Frame(impedance_notebook)
 impedance_notebook.add(microstrip_diff_tab, text="Microstrip - Diff")
 
-# Create entry widgets for Microstrip - Diff inputs
+# Microstrip - Diff inputs
 microstrip_diff_w_label = tk.Label(microstrip_diff_tab, text="Enter w:")
 microstrip_diff_w_label.pack()
 microstrip_diff_w_entry = tk.Entry(microstrip_diff_tab)
@@ -200,11 +199,11 @@ microstrip_diff_Er_label.pack()
 microstrip_diff_Er_entry = tk.Entry(microstrip_diff_tab)
 microstrip_diff_Er_entry.pack()
 
-# Create the Stripline - SE tab
+# Stripline - SE tab
 stripline_se_tab = ttk.Frame(impedance_notebook)
 impedance_notebook.add(stripline_se_tab, text="Stripline - SE")
 
-# Create entry widgets for Stripline - SE inputs
+# Stripline - SE inputs
 stripline_se_w_label = tk.Label(stripline_se_tab, text="Enter w:")
 stripline_se_w_label.pack()
 stripline_se_w_entry = tk.Entry(stripline_se_tab)
@@ -225,11 +224,11 @@ stripline_se_Er1_label.pack()
 stripline_se_Er1_entry = tk.Entry(stripline_se_tab)
 stripline_se_Er1_entry.pack()
 
-# Create the Stripline - Diff tab
+# Stripline - Diff tab
 stripline_diff_tab = ttk.Frame(impedance_notebook)
 impedance_notebook.add(stripline_diff_tab, text="Stripline - Diff")
 
-# Create entry widgets for Stripline - Diff inputs
+# Stripline - Diff inputs
 stripline_diff_w_label = tk.Label(stripline_diff_tab, text="Enter w:")
 stripline_diff_w_label.pack()
 stripline_diff_w_entry = tk.Entry(stripline_diff_tab)
@@ -265,13 +264,12 @@ stripline_diff_Er2_label.pack()
 stripline_diff_Er2_entry = tk.Entry(stripline_diff_tab)
 stripline_diff_Er2_entry.pack()
 
-# Create the "Calculate Impedance" button
+# "Calculate Impedance" button
 calculate_button = tk.Button(root, text="Calculate Impedance", command=calculate_impedance)
 calculate_button.pack(pady=20)
 
-# Create a label to display the output impedance
+# output impedance
 output_label = tk.Label(root, text="")
 output_label.pack(pady=10)
 
-# Start the tkinter main loop
 root.mainloop()
