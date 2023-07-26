@@ -50,12 +50,48 @@ def calculate_impedance():
         g = s / h 
         Er_eff = 0
         Er_eff0 = 0 
+        a0 = 0 
+        b0 = 0
+        c0 = 0
+        
 
         if u < 1:
             Er_eff = ((Er + 1) / 2) + ((Er - 1) / 2) * ((math.sqrt(w / (w+12*h))) + 0.04 * ((w / (w + 12 * h))**2)) #7
 
         else: 
-            Er_eff = ((Er + 1) / 2) + ((Er - 1) / 2) * (math.sqrt(w / (w+12*h))) #8 
+            Er_eff = ((Er + 1) / 2) + ((Er - 1) / 2) * (math.sqrt(w / (w+12*h)))                #8 
+
+        a0 = 0.7287 * (Er_eff - ((Er + 1)/2)) * (math.sqrt(1 - (math.exp(-0.179 * u))))         #9 
+        
+        b0 = (0.747 * Er) / (0.15 + Er)                                                         #10 
+        
+        c0 = b0 - (b0 - 0.207) * (math.exp(-0.414 * u))                                         #11 
+        
+        d0 = 0.593 + 0.694 * math.exp(-0.562 * u)                                               #12 
+        
+        q1 = 0.8695 * u**0.194                                                                  #13
+        
+        q2 = 1 + 0.7519 * g + 0.189 * g**2.31                                                   #14
+        
+        ln_content = (g**10)/(1+(g/3.4)**10)
+        q3 = 0.1975 + ((16.6 + (8.4 / g)**6)**-0.387) + (1/241)*math.log(ln_content,math.e)     #15
+        
+        q4 = (2 * q1) / (q2(math.exp(-g) * u**q3 + (2-math.exp(-g)) * u**(-q3)))                #16
+        
+        ln_content = 1 + (0.638 / (g + 0.517 * g**2.43))
+        q5 = 1.794 + 1.14 * math.log(ln_content, math.e)                                        #17
+        
+        ln_content = (g**10) / (1 + (g / 5.8)**10)
+        q6 = 0.2305 + (1 / 281.3) * math.log(ln_content, math.e)                                
+        ln_content = 1 + 0.598 * (g**1.154)
+        q6 = q6 + (1/5.1) * math.log(ln_content, math.e)                                        #18
+        
+        q7 = (10 + 190 * (g**2)) / (1 + 82.3 * (g**3))                                          #19
+
+
+
+
+
 
         
 
