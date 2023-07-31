@@ -324,7 +324,7 @@ stripline_se_Er1_label.pack()
 stripline_se_Er1_entry = tk.Entry(stripline_se_tab)
 stripline_se_Er1_entry.pack()
 
-stripline_se_Er2_label = tk.Label(stripline_se_tab, text="Enter Er_1:")
+stripline_se_Er2_label = tk.Label(stripline_se_tab, text="Enter Er_2:")
 stripline_se_Er2_label.pack()
 stripline_se_Er2_entry = tk.Entry(stripline_se_tab)
 stripline_se_Er2_entry.pack()
