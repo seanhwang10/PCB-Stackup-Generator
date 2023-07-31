@@ -117,7 +117,9 @@ def calculate_impedance():
         w = float(stripline_se_w_entry.get())
         t = float(stripline_se_t_entry.get())
         h1 = float(stripline_se_h1_entry.get())
+        h2 = float(stripline_se_h2_entry.get())
         Er1 = float(stripline_se_Er1_entry.get())
+        Er2 = float(stripline_se_Er2_entry.get())
         impedance = w / (2 * 3.141592653589793 * t) * (1 + (1 + 2 * h1 / w) ** 0.5)
         impedance *= (1 - 0.48 * math.exp(-0.96 * (Er1 - 1)) + 0.54 * ((Er1 - 1) ** 2))
 
@@ -219,10 +221,20 @@ stripline_se_h1_label.pack()
 stripline_se_h1_entry = tk.Entry(stripline_se_tab)
 stripline_se_h1_entry.pack()
 
+stripline_se_h2_label = tk.Label(stripline_se_tab, text="Enter h_2:")
+stripline_se_h2_label.pack()
+stripline_se_h2_entry = tk.Entry(stripline_se_tab)
+stripline_se_h2_entry.pack()
+
 stripline_se_Er1_label = tk.Label(stripline_se_tab, text="Enter Er_1:")
 stripline_se_Er1_label.pack()
 stripline_se_Er1_entry = tk.Entry(stripline_se_tab)
 stripline_se_Er1_entry.pack()
+
+stripline_se_Er2_label = tk.Label(stripline_se_tab, text="Enter Er_1:")
+stripline_se_Er2_label.pack()
+stripline_se_Er2_entry = tk.Entry(stripline_se_tab)
+stripline_se_Er2_entry.pack()
 
 # Stripline - Diff tab
 stripline_diff_tab = ttk.Frame(impedance_notebook)
