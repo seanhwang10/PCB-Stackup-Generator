@@ -120,8 +120,101 @@ def calculate_impedance():
         h2 = float(stripline_se_h2_entry.get())
         Er1 = float(stripline_se_Er1_entry.get())
         Er2 = float(stripline_se_Er2_entry.get())
-        impedance = w / (2 * 3.141592653589793 * t) * (1 + (1 + 2 * h1 / w) ** 0.5)
-        impedance *= (1 - 0.48 * math.exp(-0.96 * (Er1 - 1)) + 0.54 * ((Er1 - 1) ** 2))
+
+        # start of the Engineering Approximation Method EQs: 25-34
+        b1 = 2 * h1 + t
+        b2 = 2 * h2 + t
+
+        def calc_Zstrip_wless(w, b, Er):  # helper func for EQs 26-28
+
+            w_eff = w - b * (0.35 - (w / b)) ** 2  # 26
+            ln_content = (4 * pi * w_eff) / t
+            Z_k = (w_eff / 2) * (1 + (t / (pi * w_eff)) * (
+                        1 + math.log(ln_content, math.e) + 0.51 * pi * (t / w_eff) ** 2))  # 27
+            ln_content = (4 * b) / (pi * Z_k)
+            Z_stripline = (60 / math.sqrt(Er)) * math.log(ln_content, math.e)  # 28
+
+            return Z_stripline
+
+        def calc_Zstrip_wmore(w, b, Er):
+
+            w_eff = w  # 29
+            ln_content = (1 / (1 / (1 - t / b)) + 1)
+            Z_k = (2 / (1 - t / b)) * math.log(ln_content, math.e)
+            ln_content = (1 / (1 - t / b) ** 2) - 1
+            Z_k -= ((1 / (1 - t / b)) - 1) * math.log(ln_content, math.e)  # 30
+            Z_stripline = (1 / math.sqrt(Er)) * (94.15 / ((w_eff / b) / (1 - t / b)) + Z_k / pi)  # 31
+
+            return Z_stripline
+
+        if w / b1 < 0.35:
+            Z_stripline1 = calc_Zstrip_wless(w, b1, Er1)
+        else:
+            Z_stripline1 = calc_Zstrip_wmore(w, b1, Er1)
+
+        if w / b2 < 0.35:
+            Z_stripline2 = calc_Zstrip_wless(w, b2, Er2)
+        else:
+            Z_stripline2 = calc_Zstrip_wmore(w, b2, Er2)
+
+        vo = 2.998 * 10 ** 8  # [m/sec]
+        v_p1 = vo / math.sqrt(Er1)  # 32
+        v_p2 = vo / math.sqrt(Er2)  # 32
+
+        C1 = 1 / (2 * v_p1 * Z_stripline1)  # 33
+        C2 = 1 / (2 * v_p2 * Z_stripline2)  # 33
+
+        #Engineering Approximation Method Result
+        Zo_approx = (Er1 * Er2) ** 0.25 / (vo * (C1 + C2))  # 34
+
+        t_b1 = 1 / (1 - (t / b1))  # 36
+        t_b2 = 1 / (1 - (t / b2))
+
+        eo = 8.854 * 10 ** (-12)  # [F/m]
+
+        C_f1 = ((Er1 * eo) / pi) * 2 * t_b1 * math.log(t_b1 + 1, math.e)
+        C_f1 -= ((Er1 * eo) / pi) * (t_b1 - 1) * math.log(t_b1 ** 2 - 1, math.e)  # 35
+
+        C_f2 = ((Er2 * eo) / pi) * 2 * t_b2 * math.log(t_b2 + 1, math.e)
+        C_f2 -= ((Er2 * eo) / pi) * (t_b2 - 1) * math.log(t_b2 ** 2 - 1, math.e)  # 35
+
+        if (w * t) / (b1 ** 2) < 0.015:
+            ln_content = 2 * math.coth(pi * w / 4 * b1)
+            W_c01 = (2 / pi) * math.log(2, math.e) + (w / b1) - 1 / ((2 / pi) * math.log(ln_content, math.e))  # 39
+            ln_content = 2 * math.coth(pi * w / 4 * b2)
+            W_c02 = (2 / pi) * math.log(2, math.e) + (w / b2) - 1 / ((2 / pi) * math.log(ln_content, math.e))  # 39
+
+            w_eff1 = w - b1 * W_c01 * ((1 - math.sqrt(w * t * 0.015 / b1 ** 2)) ** 2)  # 38
+            w_eff2 = w - b2 * W_c02 * ((1 - math.sqrt(w * t * 0.015 / b2 ** 2)) ** 2)  # 38
+
+        else:
+            w_eff1 = w
+            w_eff2 = w
+
+        C_p1 = Er1 * eo * (w_eff1 / h1)  # 37
+        C_p2 = Er2 * eo * (w_eff2 / h2)  # 37
+
+        C_total = 2 * C_f1 + 2 * C_f2 + C_p1 + C_p2  # 40
+
+        # Start C_total_air calculation
+        C_f1_air = (eo / pi) * 2 * t_b1 * math.log(t_b1 + 1, math.e)
+        C_f1_air -= (eo / pi) * (t_b1 - 1) * math.log(t_b1 ** 2 - 1, math.e)  # 35
+
+        C_f2_air = (eo / pi) * 2 * t_b2 * math.log(t_b2 + 1, math.e)
+        C_f2_air -= (eo / pi) * (t_b2 - 1) * math.log(t_b2 ** 2 - 1, math.e)  # 35
+
+        C_p1_air = eo * (w_eff1 / h1)  # 37
+        C_p2_air = eo * (w_eff2 / h2)  # 37
+
+        C_total_air = 2 * C_f1_air + 2 * C_f2_air + C_p1_air + C_p2_air
+        # End C_total_air calculation
+
+        L = 1 / (vo ** 2 * C_total_air)
+        #Strict Analytical Method Result
+        Zo_analytical = math.sqrt(L / C_total)  # 41
+
+        #What the GUI will display
+        impedance = Zo_analytical
 
     else:  # Stripline - Diff
         w = float(stripline_diff_w_entry.get())

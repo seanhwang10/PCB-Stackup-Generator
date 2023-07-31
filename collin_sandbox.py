@@ -149,23 +149,23 @@ def calculate_impedance():
         return  Z_stripline
 
         if w / b1 < 0.35:
-            Z_stripline1 = calc_Zstripline_wless(w, b1, Er1)
+            Z_stripline1 = calc_Zstrip_wless(w, b1, Er1)
         else:
-            Z_stripline1 = calc_Zstripline_wmore(w, b1, Er1)
+            Z_stripline1 = calc_Zstrip_wmore(w, b1, Er1)
 
         if w / b2 < 0.35:
-            Z_stripline2 = calc_Zstripline_wless(w, b2, Er2)
+            Z_stripline2 = calc_Zstrip_wless(w, b2, Er2)
         else:
-            Z_stripline2 = calc_Zstripline_wmore(w, b2, Er2)
+            Z_stripline2 = calc_Zstrip_wmore(w, b2, Er2)
 
         vo = 2.998 * 10**8 # [m/sec]
-        v_p1 = v_o / math.sqrt(Er1)                                                                 #32
-        v_p2 = v_o / math.sqrt(Er2)                                                                 #32
+        v_p1 = vo / math.sqrt(Er1)                                                                 #32
+        v_p2 = vo / math.sqrt(Er2)                                                                 #32
 
         C1 = 1 / (2 * v_p1 * Z_stripline1)                                                          #33
         C2 = 1 / (2 * v_p2 * Z_stripline2)                                                          #33
 
-        Zo_approx = (Er1 * Er2)**(1/4) / (vo(C1 + C2))                                                     #34
+        Zo_approx = (Er1 * Er2)**0.25 / (vo * (C1 + C2))                                              #34
 
         t_b1 = 1 / (1 - (t / b1))                                                                   #36
         t_b2 = 1 / (1 - (t / b2))
@@ -212,9 +212,7 @@ def calculate_impedance():
         L = 1 / (vo**2 * C_total_air)
         Zo_analytical = math.sqrt(L / C_total)                                                      #41
 
-
-        #impedance = w / (2 * 3.141592653589793 * t) * (1 + (1 + 2 * h1 / w) ** 0.5) "not sure what these are for"
-        #impedance *= (1 - 0.48 * math.exp(-0.96 * (Er1 - 1)) + 0.54 * ((Er1 - 1) ** 2))
+        impedance = Zo_analytical
 
     else:  # Stripline - Diff
         w = float(stripline_diff_w_entry.get())
