@@ -1,0 +1,42 @@
+Test Case 1: 
+W > 6.75
+t > 1.2 
+h1 > 4
+h2 > 5
+Er_1 > 3
+Er_2 > 3
+
+Output = 39.90 
+
+Test Case 2: 
+W > 5.5 
+(Rest is the same with above test case 1) 
+
+Output > 44.52 
+
+Test Case 3: 
+W > 4.25 
+(Rest identical to TC 1) 
+
+Output > 50.38 
+
+
+Test Case 4: 
+W > 4.25
+t > 1.2
+h1 > 3
+h2 > 4
+Er_1 > 3.5
+Er_2 > 3.5 
+
+Output > 40.06 
+
+Test Case 5: (Rest Identical to TC4) 
+W > 3.25 
+Output 45.38 
+
+Test Case 6: (Rest Identical to TC4) 
+W > 3 
+Output > 46.96 
+
+
