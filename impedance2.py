@@ -1,9 +1,13 @@
 # Impedance 2 - Microstrip SE, Diff formula integration.
-# Sean Hwang (seahwang@cisco.com)
+# Sean Hwang (seahwang@cisco.com)  
 
 import tkinter as tk
 from tkinter import ttk
 import math
+import numpy as np
+from numpy import matrix
+from numpy import linalg
+import mpmath
 
 def calculate_impedance():
     # Entry Widget
@@ -164,7 +168,7 @@ def calculate_impedance():
         C1 = 1 / (2 * v_p1 * Z_stripline1)  # 33
         C2 = 1 / (2 * v_p2 * Z_stripline2)  # 33
 
-        #Engineering Approximation Method Result
+        #Engineering Approximation Method Result ***DO NOT USE***
         Zo_approx = (Er1 * Er2) ** 0.25 / (vo * (C1 + C2))  # 34
 
         t_b1 = 1 / (1 - (t / b1))  # 36
@@ -178,17 +182,19 @@ def calculate_impedance():
         C_f2 = ((Er2 * eo) / pi) * 2 * t_b2 * math.log(t_b2 + 1, math.e)
         C_f2 -= ((Er2 * eo) / pi) * (t_b2 - 1) * math.log(t_b2 ** 2 - 1, math.e)  # 35
 
+        #w_eff1
         if (w * t) / (b1 ** 2) < 0.015:
-            ln_content = 2 * math.coth(pi * w / 4 * b1)
+            ln_content = 2 * mpmath.coth(pi * w / 4 * b1)
             W_c01 = (2 / pi) * math.log(2, math.e) + (w / b1) - 1 / ((2 / pi) * math.log(ln_content, math.e))  # 39
-            ln_content = 2 * math.coth(pi * w / 4 * b2)
-            W_c02 = (2 / pi) * math.log(2, math.e) + (w / b2) - 1 / ((2 / pi) * math.log(ln_content, math.e))  # 39
-
             w_eff1 = w - b1 * W_c01 * ((1 - math.sqrt(w * t * 0.015 / b1 ** 2)) ** 2)  # 38
-            w_eff2 = w - b2 * W_c02 * ((1 - math.sqrt(w * t * 0.015 / b2 ** 2)) ** 2)  # 38
-
         else:
             w_eff1 = w
+        #w_eff2
+        if (w * t) / (b2 ** 2) < 0.015:
+            ln_content = 2 * mpmath.coth(pi * w / 4 * b2)
+            W_c02 = (2 / pi) * math.log(2, math.e) + (w / b2) - 1 / ((2 / pi) * math.log(ln_content, math.e))  # 39
+            w_eff2 = w - b2 * W_c02 * ((1 - math.sqrt(w * t * 0.015 / b2 ** 2)) ** 2)  # 38
+        else:
             w_eff2 = w
 
         C_p1 = Er1 * eo * (w_eff1 / h1)  # 37
@@ -213,7 +219,7 @@ def calculate_impedance():
         #Strict Analytical Method Result
         Zo_analytical = math.sqrt(L / C_total)  # 41
 
-        #What the GUI will display
+        #What the GUI will display ***USE THIS RESULT***
         impedance = Zo_analytical
 
     else:  # Stripline - Diff
@@ -224,9 +230,128 @@ def calculate_impedance():
         h2 = float(stripline_diff_h2_entry.get())
         Er1 = float(stripline_diff_Er1_entry.get())
         Er2 = float(stripline_diff_Er2_entry.get())
-        impedance = w / (2 * 3.141592653589793 * s * t) * ((1 + (2 * h1 / w) ** 0.5) + (1 + (2 * h2 / w) ** 0.5))
-        impedance *= (1 - 0.48 * math.exp(-0.96 * (Er1 - 1)) + 0.54 * ((Er1 - 1) ** 2))
-        impedance *= (1 - 0.48 * math.exp(-0.96 * (Er2 - 1)) + 0.54 * ((Er2 - 1) ** 2))
+
+
+        #Start Strict Analytical Method
+        b1 = 2 * h1 + t #42
+        b2 = 2 * h2 + t #42
+
+        t_b1 = 1 / (1 - (t / b1))  # 36
+        t_b2 = 1 / (1 - (t / b2))
+
+        eo = 8.854 * 10 ** (-12)  # [F/m]
+
+        #C_fi
+        C_f1  = ((Er1 * eo) / pi) * 2 * t_b1 * math.log(t_b1 + 1, math.e)
+        C_f1 -= ((Er1 * eo) / pi) * (t_b1 - 1) * math.log(t_b1**2 - 1, math.e)  # 35
+
+        C_f2  = ((Er2 * eo) / pi) * 2 * t_b2 * math.log(t_b2 + 1, math.e)
+        C_f2 -= ((Er2 * eo) / pi) * (t_b2 - 1) * math.log(t_b2**2 - 1, math.e)  # 35
+
+        #C_pi
+        # w_eff1
+        if (w * t) / (b1 ** 2) < 0.015:
+            ln_content = 2 * mpmath.coth(pi * w / 4 * b1)
+            W_c01 = (2 / pi) * math.log(2, math.e) + (w / b1) - 1 / ((2 / pi) * math.log(ln_content, math.e))  # 39
+            w_eff1 = w - b1 * W_c01 * ((1 - math.sqrt(w * t * 0.015 / b1 ** 2)) ** 2)  # 38
+        else:
+            w_eff1 = w
+        # w_eff2
+        if (w * t) / (b2 ** 2) < 0.015:
+            ln_content = 2 * mpmath.coth(pi * w / 4 * b2)
+            W_c02 = (2 / pi) * math.log(2, math.e) + (w / b2) - 1 / ((2 / pi) * math.log(ln_content, math.e))  # 39
+            w_eff2 = w - b2 * W_c02 * ((1 - math.sqrt(w * t * 0.015 / b2 ** 2)) ** 2)  # 38
+        else:
+            w_eff2 = w
+
+        C_p1 = Er1 * eo * (w_eff1 / h1)  # 37
+        C_p2 = Er2 * eo * (w_eff2 / h2)  # 37
+
+        #Mi
+        if s / b1 < 0.3:
+            M1 = 1 + 2.13507 * (t / b1) * (s / b1)**-0.57518    #49
+        else:
+            M1 = 1 + 3.89531 * (t / b1) * (s / b1)**-0.11467    #49
+
+        if s / b2 < 0.3:
+            M2 = 1 + 2.13507 * (t / b2) * (s / b2)**-0.57518    #49
+        else:
+            M2 = 1 + 3.89531 * (t / b2) * (s / b2)**-0.11467    #49
+
+        #Ni
+        if t / b1 <= 0.5636:
+            if s / b1 < 0.08:
+                N1 = -1 * (0.2933 + 3.333 * (s / b1)) * (t / b1)  #50
+            else:
+                N1 = -0.56 * (t / b1)
+            if s / b2 < 0.08:
+                N2 = -1 * (0.2933 + 3.333 * (s / b2)) * (t / b2)  #50
+            else:
+                N2 = -0.56 * (t / b2)
+
+        else:
+            if s / b1 < 0.08:
+                N1 = -0.1653 - 5.6814 * (s / b1) + 6.7475 * (s * t) / (b1**2) #51
+            else:
+                N1 = -0.62 + 0.54 * (t / b1)    #51
+            if s / b2 < 0.08:
+                N2 = -0.1653 - 5.6814 * (s / b2) + 6.7475 * (s * t) / (b2**2) #51
+            else:
+                N2 = -0.62 + 0.54 * (t / b2)    #51
+
+        
+        #C_fei
+        ln_content = math.cosh(pi * s / 2 * b1)
+        C_fe1 = Er1 * eo * M1 * ((s / b1) - (2 / pi) * math.log(ln_content, math.e)) + Er1 * eo * N1    #52
+        ln_content = math.cosh(pi * s / 2 * b2)
+        C_fe2 = Er2 * eo * M2 * ((s / b2) - (2 / pi) * math.log(ln_content, math.e)) + Er2 * eo * N2    #52
+
+        C11 = (C_f1 + C_f2) + (C_p1 + C_p2) + (C_fe1 + C_fe2)   #53
+        C22 = C11   #53
+
+        #C_mi
+        ln_content = mpmath.coth(pi * s / 2 * b1)
+        C_m1 = Er1 * eo * M1 * (2 / pi) * math.log(ln_content, math.e)  #54
+        ln_content = mpmath.coth(pi * s / 2 * b2)
+        C_m2 = Er2 * eo * M2 * (2 / pi) * math.log(ln_content, math.e)  #54
+
+        Cm = (C_m1 + C_m2) / 2  #55
+
+        #C_air
+        C_f1_air = (eo / pi) * 2 * t_b1 * math.log(t_b1 + 1, math.e)
+        C_f1_air -= (eo / pi) * (t_b1 - 1) * math.log(t_b1**2 - 1, math.e)  # 35
+
+        C_f2_air = (eo / pi) * 2 * t_b2 * math.log(t_b2 + 1, math.e)
+        C_f2_air -= (eo / pi) * (t_b2 - 1) * math.log(t_b2**2 - 1, math.e)  # 35
+
+        C_p1_air = eo * (w_eff1 / h1)  # 37
+        C_p2_air = eo * (w_eff2 / h2)  # 37
+
+        ln_content = mpmath.coth(pi * s / 2 * b1)
+        C_m1_air = eo * M1 * (2 / pi) * math.log(ln_content, math.e)  # 54
+        ln_content = mpmath.coth(pi * s / 2 * b2)
+        C_m2_air = eo * M2 * (2 / pi) * math.log(ln_content, math.e)  # 54
+
+        ln_content = math.cosh(pi * s / 2 * b1)
+        C_fe1_air = eo * M1 * ((s / b1) - (2 / pi) * math.log(ln_content, math.e)) + eo * N1  # 52
+        ln_content = math.cosh(pi * s / 2 * b2)
+        C_fe2_air = eo * M2 * ((s / b2) - (2 / pi) * math.log(ln_content, math.e)) + eo * N2  # 52
+
+        Cm_air = (C_m1_air + C_m2_air) / 2
+
+        C11_air = (C_f1_air + C_f2_air) + (C_p1_air + C_p2_air) + (C_fe1_air + C_fe2_air)
+        C22_air = C11_air
+
+        C_air = matrix([[(C11_air + Cm_air), -1 * Cm_air],[-1 * Cm_air, (C22_air + Cm_air)]])
+
+        vo = 2.998 * 10 ** 8  # [m/sec]
+        
+        L = linalg.inv(C_air) * (1 / vo**2)
+        L11 = L[0,0]
+        Lm = L[0,1]
+
+        Z_diff = 2 * math.sqrt((L11 - Lm) / (C11 + 2 * Cm))
+        impedance = Z_diff
 
     output_label.config(text=f"Impedance: {impedance:.2f} Ohms")
 
